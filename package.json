@@ -1,0 +1,27 @@
+{
+  "name": "ph-brain-engine",
+  "version": "0.1.0",
+  "description": "Personal intelligence substrate — Voyage AI embeddings, Supabase pgvector, hybrid search, MCP exposure.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "ph-brain": "src/cli.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "schema": "bash scripts/apply-schema.sh",
+    "import": "bun run src/cli.ts import",
+    "query": "bun run src/cli.ts query",
+    "serve": "bun run src/cli.ts serve",
+    "typecheck": "bun x tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "gray-matter": "^4.0.3",
+    "postgres": "^3.4.4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.5.0"
+  }
+}
