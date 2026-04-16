@@ -1,7 +1,12 @@
 -- PH-Brain Engine — Postgres + pgvector schema
 --
--- Target: Supabase Postgres with pgvector extension.
+-- Target: Supabase Postgres with pgvector 0.7+.
 -- Embedding model: Voyage AI voyage-3-large @ 2048 dimensions.
+--
+-- We use `halfvec(2048)` (half-precision float16) instead of `vector(2048)`
+-- because pgvector's HNSW index caps the regular `vector` type at 2000
+-- dimensions. `halfvec` with HNSW supports up to 4000 dims with negligible
+-- recall loss. Query-time casts inline the ::halfvec type.
 --
 -- Phase 1 keeps compiled_truth + timeline columns even though import writes
 -- only to compiled_truth — this leaves the phase 2 dream-cycle path wired.
@@ -39,7 +44,7 @@ CREATE TABLE IF NOT EXISTS content_chunks (
   chunk_index   INTEGER NOT NULL,
   chunk_text    TEXT    NOT NULL,
   chunk_source  TEXT    NOT NULL DEFAULT 'compiled_truth',
-  embedding     vector(2048),
+  embedding     halfvec(2048),
   model         TEXT    NOT NULL DEFAULT 'voyage-3-large',
   token_count   INTEGER,
   embedded_at   TIMESTAMPTZ,
@@ -48,7 +53,7 @@ CREATE TABLE IF NOT EXISTS content_chunks (
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_chunks_page_index ON content_chunks(page_id, chunk_index);
 CREATE INDEX IF NOT EXISTS idx_chunks_page      ON content_chunks(page_id);
-CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON content_chunks USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS idx_chunks_embedding ON content_chunks USING hnsw (embedding halfvec_cosine_ops);
 
 -- ============================================================
 -- ingest_log: audit trail for each import run

@@ -158,7 +158,7 @@ export class Engine {
       const tokens = chunk.token_count ?? null;
 
       if (embStr) {
-        rows.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}::vector, $${p++}, $${p++}, now())`);
+        rows.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}::halfvec, $${p++}, $${p++}, now())`);
         params.push(pageId, chunk.chunk_index, chunk.chunk_text, chunk.chunk_source, embStr, model, tokens);
       } else {
         rows.push(`($${p++}, $${p++}, $${p++}, $${p++}, NULL, $${p++}, $${p++}, NULL)`);
@@ -235,13 +235,13 @@ export class Engine {
         SELECT
           p.slug, p.id AS page_id, p.title, p.source_type,
           cc.id AS chunk_id, cc.chunk_index, cc.chunk_text, cc.chunk_source,
-          1 - (cc.embedding <=> ${vec}::vector) AS score
+          1 - (cc.embedding <=> ${vec}::halfvec) AS score
         FROM content_chunks cc
         JOIN pages p ON p.id = cc.page_id
         WHERE cc.embedding IS NOT NULL
           ${opts?.source_type ? sql`AND p.source_type = ${opts.source_type}` : sql``}
           ${opts?.exclude_slugs?.length ? sql`AND p.slug != ALL(${opts.exclude_slugs})` : sql``}
-        ORDER BY cc.embedding <=> ${vec}::vector
+        ORDER BY cc.embedding <=> ${vec}::halfvec
         LIMIT ${limit} OFFSET ${offset}
       `;
       return rows;
