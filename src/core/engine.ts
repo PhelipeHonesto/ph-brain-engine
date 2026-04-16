@@ -32,10 +32,11 @@ export class Engine {
   }
 
   async transaction<T>(fn: (engine: Engine) => Promise<T>): Promise<T> {
-    return this.sql.begin(async tx => {
+    const result = await this.sql.begin(async tx => {
       const txEngine = new Engine(tx as unknown as Sql);
       return fn(txEngine);
     });
+    return result as T;
   }
 
   // ----------------------------------------------------------------
@@ -57,7 +58,7 @@ export class Engine {
                          frontmatter, content_hash, updated_at)
       VALUES (${slug}, ${input.source_type}, ${input.title},
               ${input.compiled_truth}, ${input.timeline ?? ''},
-              ${this.sql.json(frontmatter)},
+              ${this.sql.json(frontmatter as Record<string, any>)},
               ${input.content_hash}, now())
       ON CONFLICT (slug) DO UPDATE SET
         source_type    = EXCLUDED.source_type,
@@ -178,7 +179,7 @@ export class Engine {
          model        = COALESCE(EXCLUDED.model, content_chunks.model),
          token_count  = EXCLUDED.token_count,
          embedded_at  = COALESCE(EXCLUDED.embedded_at, content_chunks.embedded_at)`,
-      params,
+      params as never[],
     );
   }
 
