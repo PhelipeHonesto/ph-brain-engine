@@ -5,7 +5,8 @@
   "type": "module",
   "private": true,
   "bin": {
-    "ph-brain": "src/cli.ts"
+    "ph-brain": "src/cli.ts",
+    "phb": "src/cli.ts"
   },
   "scripts": {
     "dev": "bun run src/cli.ts",
