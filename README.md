@@ -1,10 +1,14 @@
-# PH-Brain Engine
+# ph-brain-engine
 
-Personal intelligence substrate. Voyage AI embeddings, Supabase pgvector,
-hybrid search, MCP exposure.
+[![CI](https://github.com/PhelipeHonesto/ph-brain-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/PhelipeHonesto/ph-brain-engine/actions/workflows/ci.yml)
+![tests](https://img.shields.io/badge/tests-22_passing-brightgreen)
+![Bun](https://img.shields.io/badge/runtime-Bun-000000?logo=bun&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-2048d-4169E1?logo=postgresql&logoColor=white)
+![MCP](https://img.shields.io/badge/MCP-4_tools-111111)
 
-Built by Phelipe Honesto. Architecture inspired by
-[GBrain](https://github.com/garrytan/gbrain) — not a fork.
+**Long-term memory for agents.** ph-brain-engine turns a markdown vault (notes, Claude conversation exports, project docs) into a hybrid semantic and keyword search index. Any MCP client, like Claude Code, can query it mid-task.
+
+The retrieval core (recursive chunker, rank fusion, dedup, intent classifier) is ported from [GBrain](https://github.com/garrytan/gbrain) under the MIT License; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The Postgres and pgvector engine, the Voyage embedding pipeline, the importer, the CLI, and the MCP server were built here.
 
 ## What this is
 
@@ -56,7 +60,7 @@ equivalent):
   "mcpServers": {
     "ph-brain": {
       "command": "bun",
-      "args": ["run", "/Users/phelipehonesto/ph-brain-engine/src/cli.ts", "serve"],
+      "args": ["run", "/path/to/ph-brain-engine/src/cli.ts", "serve"],
       "env": {
         "DATABASE_URL": "postgres://...",
         "VOYAGE_API_KEY": "pa-..."
@@ -107,6 +111,15 @@ Mixing them collapses retrieval quality. `src/core/voyage.ts` requires the
 type on every call; `import.ts` always passes `"document"`, `hybrid.ts`
 always passes `"query"`.
 
+## Tests
+
+```bash
+bun test          # 22 tests: chunking, RRF fusion, cosine, dedup, intent, markdown/slug safety
+bun run typecheck
+```
+
+The suite covers the pure retrieval logic, so it runs with no database or API keys. One of the tests checks the slug guard: a note can't use frontmatter to overwrite another page.
+
 ## Repo layout
 
 ```
@@ -135,6 +148,15 @@ src/core/types.ts          shared types
 - Git-diff incremental sync (currently walks the whole dir on every import)
 - Raw layer sync to S3
 
+## Part of the OSA stack
+
+| Repo | Role |
+| --- | --- |
+| [dumont-agent](https://github.com/PhelipeHonesto/dumont-agent) | Charter-brokerage agent |
+| [osa-data-platform](https://github.com/PhelipeHonesto/osa-data-platform) | Aviation data ingestion and entity resolution |
+| **ph-brain-engine** (this repo) | Memory substrate served over MCP |
+| [Aviation-News-Aggregator](https://github.com/PhelipeHonesto/Aviation-News-Aggregator) | Loud Hawk: aviation news and signals |
+
 ## License
 
-Private.
+The original code is public for review; no license to use it is granted. Code ported from GBrain stays under its MIT License (see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
